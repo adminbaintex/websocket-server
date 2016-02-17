@@ -46,8 +46,6 @@ func (s *Server) ListenAndServe(address string, path string) error {
 	}
 	s.listener = l
 
-	log.Printf("Server listening on: %s, WS Path: %s", address, path)
-
 	mux := http.NewServeMux()
 	mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		var upgrader = websocket.Upgrader{
