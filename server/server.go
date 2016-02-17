@@ -10,7 +10,7 @@ import (
 
 // WSHandler will receive new connections as streams.
 type WSHandler interface {
-	Serve(net.Conn, Stream)
+	ServeWS(net.Conn, Stream)
 }
 
 // Server manages multiple Configurations and yields new connection as
@@ -26,9 +26,7 @@ type Server struct {
 
 // NewServer returns a new Server.
 func NewServer(handler WSHandler) *Server {
-	return &Server{
-		wsHandler: handler,
-	}
+	return &Server{wsHandler: handler}
 }
 
 func (s *Server) serve() {
@@ -66,7 +64,7 @@ func (s *Server) ListenAndServe(address string, path string) error {
 			return
 		}
 
-		s.wsHandler.Serve(conn.UnderlyingConn(), newAbstractStream(conn))
+		s.wsHandler.ServeWS(conn.UnderlyingConn(), newAbstractStream(conn))
 	})
 	s.httpHandler = mux
 

@@ -16,7 +16,7 @@ var path = flag.String("path", "/app", "Path of the websocket application")
 
 type exampleHandler struct{}
 
-func (handler *exampleHandler) Serve(conn net.Conn, s server.Stream) {
+func (handler *exampleHandler) ServeWS(conn net.Conn, s server.Stream) {
 	defer func() {
 		log.Println(conn.RemoteAddr(), "CLOSED")
 		s.Close()
