@@ -2,8 +2,8 @@ package server
 
 import (
 	"errors"
-
 	"github.com/gorilla/websocket"
+	"log"
 )
 
 // Stream interface simplify the access to a connection receiving messages
@@ -53,6 +53,7 @@ func (as *AbstractStream) read() {
 
 		mt, data, err := as.conn.ReadMessage()
 		if err != nil {
+			log.Println(err)
 			return
 		}
 		message := new(WSMessage)
