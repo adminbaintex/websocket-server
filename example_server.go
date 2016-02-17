@@ -2,13 +2,13 @@ package main
 
 import (
 	"flag"
+	"github.com/escrichov/websocket-server/server"
 	"log"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
+	"net/url"
 	"time"
-
-	"github.com/escrichov/websocket-server/server"
 )
 
 var addr = flag.String("addr", "127.0.0.1:8082", "ip:port to listening to")
@@ -16,13 +16,13 @@ var path = flag.String("path", "/app", "Path of the websocket application")
 
 type exampleHandler struct{}
 
-func (handler *exampleHandler) ServeWS(conn net.Conn, s server.Stream) {
+func (handler *exampleHandler) ServeWS(conn net.Conn, s server.Stream, query url.Values) {
 	defer func() {
 		log.Println(conn.RemoteAddr(), "CLOSED")
 		s.Close()
 	}()
 
-	log.Println(conn.RemoteAddr(), "CONNECTED")
+	log.Println(conn.RemoteAddr(), "CONNECTED", "Query params:", query)
 	for {
 		m, ok := <-s.Incoming()
 		if !ok {

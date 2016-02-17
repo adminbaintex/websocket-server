@@ -17,6 +17,10 @@ func main() {
 	flag.Parse()
 
 	u := url.URL{Scheme: "ws", Host: *addr, Path: *path}
+	parameters := url.Values{}
+	parameters.Add("param1", "value1")
+	parameters.Add("param2", "value2")
+	u.RawQuery = parameters.Encode()
 	log.Printf("connecting to %s", u.String())
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)

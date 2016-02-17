@@ -1,16 +1,16 @@
 package server
 
 import (
+	"github.com/gorilla/websocket"
 	"log"
 	"net"
 	"net/http"
-
-	"github.com/gorilla/websocket"
+	"net/url"
 )
 
 // WSHandler will receive new connections as streams.
 type WSHandler interface {
-	ServeWS(net.Conn, Stream)
+	ServeWS(net.Conn, Stream, url.Values)
 }
 
 // Server manages multiple Configurations and yields new connection as
@@ -64,7 +64,11 @@ func (s *Server) ListenAndServe(address string, path string) error {
 			return
 		}
 
-		s.wsHandler.ServeWS(conn.UnderlyingConn(), newAbstractStream(conn))
+		s.wsHandler.ServeWS(
+			conn.UnderlyingConn(),
+			newAbstractStream(conn),
+			r.URL.Query(),
+		)
 	})
 	s.httpHandler = mux
 
