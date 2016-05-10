@@ -22,27 +22,36 @@ func (handler *exampleHandler) ServeWS(conn net.Conn, s server.Stream, query url
 		s.Close()
 	}()
 
+	// New timer to close connection
+	timer := time.NewTimer(time.Second * 3)
+
 	log.Println(conn.RemoteAddr(), "CONNECTED", "Query params:", query)
 	for {
-		m, ok := <-s.Incoming()
-		if !ok {
-			return
-		}
-		log.Println(conn.RemoteAddr(), "RECEIVED", m)
+		select {
+		case m, ok := <-s.Incoming():
+			if !ok {
+				return
+			}
 
-		msgSend := server.NewWSTextMessage([]byte("New text message"))
-		err := s.Send(msgSend)
-		if err != nil {
-			log.Print(conn.RemoteAddr(), "ERROR", err)
-			return
-		}
-		log.Println(conn.RemoteAddr(), "SENDED", msgSend)
+			log.Println(conn.RemoteAddr(), "RECEIVED", m)
 
-		if err := s.Send(m); err != nil {
-			log.Print(conn.RemoteAddr(), "ERROR", err)
+			msgSend := server.NewWSTextMessage([]byte("New text message"))
+			err := s.Send(msgSend)
+			if err != nil {
+				log.Print(conn.RemoteAddr(), "ERROR", err)
+				return
+			}
+			log.Println(conn.RemoteAddr(), "SENDED", msgSend)
+
+			if err := s.Send(m); err != nil {
+				log.Print(conn.RemoteAddr(), "ERROR", err)
+				return
+			}
+			log.Println(conn.RemoteAddr(), "SENDED", m)
+		case <-timer.C:
+			log.Println("Connection exceed 3 second. Closing")
 			return
 		}
-		log.Println(conn.RemoteAddr(), "SENDED", m)
 	}
 }
 
@@ -62,11 +71,13 @@ func main() {
 
 	log.Printf("Server listening on: %s, WS Path: %s", *addr, *path)
 
-	// Terminate server in 60 seconds
-	time.Sleep(time.Second * 60)
+	// Terminate server in 30 seconds
+	time.Sleep(time.Second * 30)
 	if err := s.Stop(); err != nil {
 		log.Fatal(err)
 	}
 
 	log.Println("Server stopped listening corretly")
+
+	time.Sleep(time.Second * 10)
 }
