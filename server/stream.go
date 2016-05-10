@@ -81,7 +81,7 @@ func (as *AbstractStream) Send(m *WSMessage) error {
 // Close will close the stream and cleanup open channels and running
 // go routines.
 func (as *AbstractStream) Close() {
+	as.conn.Close()
 	close(as.quit)
 	<-as.done
-	as.conn.Close()
 }
