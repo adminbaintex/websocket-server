@@ -19,14 +19,22 @@ type Server struct {
 	// The Handler that receives new Streams.
 	wsHandler WSHandler
 
+	// Server buffers
+	readBufferSize int
+	writeBufferSize int
+
 	// Server Listener and Handler
 	listener    net.Listener
 	httpHandler http.Handler
 }
 
 // NewServer returns a new Server.
-func NewServer(handler WSHandler) *Server {
-	return &Server{wsHandler: handler}
+func NewServer(handler WSHandler, readBufferSize int, writeBufferSize int) *Server {
+	return &Server{
+		wsHandler: handler,
+		readBufferSize: readBufferSize,
+		writeBufferSize: writeBufferSize,
+	}
 }
 
 func (s *Server) serve() {
@@ -49,8 +57,8 @@ func (s *Server) ListenAndServe(address string, path string) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		var upgrader = websocket.Upgrader{
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
+			ReadBufferSize:  s.readBufferSize,
+			WriteBufferSize: s.writeBufferSize,
 			CheckOrigin: func(r *http.Request) bool {
 				return true
 			},
