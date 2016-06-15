@@ -63,7 +63,10 @@ func main() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
 
-	s := server.NewServer(&exampleHandler{})
+	readBufferSize := 1024
+	writeBufferSize := 1024
+
+	s := server.NewServer(&exampleHandler{}, readBufferSize, writeBufferSize)
 
 	if err := s.ListenAndServe(*addr, *path); err != nil {
 		log.Fatal(err)
