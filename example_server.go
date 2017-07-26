@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"github.com/escrichov/websocket-server/server"
+	"git.baintex.com/sentio/websocket-server/server"
 	"log"
 	"net"
 	"net/http"
