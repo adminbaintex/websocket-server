@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"github.com/armon/go-proxyproto"
 )
 
 // WSHandler will receive new connections as streams.
@@ -26,14 +27,18 @@ type Server struct {
 	// Server Listener and Handler
 	listener    net.Listener
 	httpHandler http.Handler
+
+	// Use Proxy protocol
+	ProxyProtocol bool
 }
 
 // NewServer returns a new Server.
-func NewServer(handler WSHandler, readBufferSize int, writeBufferSize int) *Server {
+func NewServer(handler WSHandler, readBufferSize int, writeBufferSize int, proxyProtocol bool) *Server {
 	return &Server{
 		wsHandler: handler,
 		readBufferSize: readBufferSize,
 		writeBufferSize: writeBufferSize,
+		ProxyProtocol: proxyProtocol,
 	}
 }
 
@@ -52,7 +57,13 @@ func (s *Server) ListenAndServe(address string, path string) error {
 	if err != nil {
 		return err
 	}
-	s.listener = l
+
+	if s.ProxyProtocol {
+		// Wrap listener in a proxyproto listener
+		s.listener = &proxyproto.Listener{Listener: l}
+	} else {
+		s.listener = l
+	}
 
 	mux := http.NewServeMux()
 	mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
