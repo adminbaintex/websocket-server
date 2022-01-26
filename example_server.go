@@ -2,13 +2,14 @@ package main
 
 import (
 	"flag"
-	"git.baintex.com/sentio/websocket-server/server"
 	"log"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"net/url"
 	"time"
+
+	"github.com/adminbaintex/websocket-server/server"
 )
 
 var addr = flag.String("addr", "127.0.0.1:8082", "ip:port to listening to")
