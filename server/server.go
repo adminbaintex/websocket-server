@@ -2,7 +2,6 @@ package server
 
 import (
 	"github.com/gorilla/websocket"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -44,10 +43,7 @@ func NewServer(handler WSHandler, readBufferSize int, writeBufferSize int, proxy
 
 func (s *Server) serve() {
 	httpServer := &http.Server{Handler: s.httpHandler}
-	err := httpServer.Serve(s.listener)
-	if err != nil {
-		log.Println(err)
-	}
+	httpServer.Serve(s.listener) //nolint:errcheck
 }
 
 // ListenAndServe will run a simple WS (HTTP) server.
@@ -77,7 +73,7 @@ func (s *Server) ListenAndServe(address string, path string) error {
 
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			log.Print("upgrade:", err)
+			// Not logged: fires for every malformed/probing request.
 			return
 		}
 

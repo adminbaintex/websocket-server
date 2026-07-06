@@ -3,7 +3,6 @@ package server
 import (
 	"errors"
 	"github.com/gorilla/websocket"
-	"log"
 )
 
 // Stream interface simplify the access to a connection receiving messages
@@ -53,14 +52,23 @@ func (as *AbstractStream) read() {
 
 		mt, data, err := as.conn.ReadMessage()
 		if err != nil {
-			log.Println(err)
+			// Not logged: this fires on every client disconnect (read timeout,
+			// connection closed, ...) and the handler already reports it.
 			return
 		}
 		message := new(WSMessage)
 		message.Data = data
 		message.MessageType = mt
 
-		as.incomingChan <- message
+		// Deliver without wedging: incomingChan is unbuffered, so if the
+		// consumer stopped reading (it decided to disconnect while this message
+		// was in flight) a bare send would park this goroutine forever and
+		// Close() — which waits for it via <-as.done — would deadlock.
+		select {
+		case as.incomingChan <- message:
+		case <-as.quit:
+			return
+		}
 	}
 }
 
